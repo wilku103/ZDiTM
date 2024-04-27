@@ -1,5 +1,10 @@
+#!/usr/bin/env python3
+
 import requests
 from thefuzz import process
+
+import click
+from prettytable import PrettyTable
 
 ZDITM_URL = "https://www.zditm.szczecin.pl/api/v1/"
 
@@ -16,18 +21,27 @@ def get_stop_numbers(stop_name: str) -> list[int]:
 	return [stop["number"] for stop in stops if stop["name"].lower() in matched]
 
 
-def main():
-
-	numbers = get_stop_numbers(input("Podaj nazwę przystanku: "))
+@click.command()
+@click.argument("stop_name")
+def print_tables(stop_name: str):
+	numbers = get_stop_numbers(stop_name)
 	for number in numbers:
+		table = PrettyTable()
+		table.field_names = ["Linia", "Kierunek", "Przyjazd rzeczywisty"]
+
 		stop = requests.get(f"{ZDITM_URL}displays/{number}").json()
 		tablica = stop["departures"]
-		print(stop["stop_name"])
+
 		for departure in tablica:
 			if departure["time_real"] is None:
 				continue
-			print(departure["line_number"], departure["direction"], departure["time_real"])
-		print()
+			table.add_row([departure["line_number"], departure["direction"], f"{departure["time_real"]} min"])
+		print(stop["stop_name"])
+		print(table)
+
+
+def main():
+	print_tables()
 
 
 if __name__ == "__main__":
