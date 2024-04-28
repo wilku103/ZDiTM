@@ -32,12 +32,14 @@ def print_tables(stop_name: str):
 		stop = requests.get(f"{ZDITM_URL}displays/{number}").json()
 		tablica = stop["departures"]
 
+		table.title = f"{stop["stop_name"]} ({stop["stop_number"]})"
+
 		for departure in tablica:
 			if departure["time_real"] is None:
 				continue
 			table.add_row([departure["line_number"], departure["direction"], f"{departure["time_real"]} min"])
-		print(stop["stop_name"])
-		print(table)
+		if len(table.rows) > 0:
+			print(table)
 
 
 def main():
