@@ -23,7 +23,8 @@ def get_stop_numbers(stop_name: str) -> list[int]:
 
 @click.command()
 @click.argument("stop_name")
-def print_tables(stop_name: str):
+@click.option("-l", "--line", help="Filter by line number")
+def print_tables(stop_name: str, line: str):
 	numbers = get_stop_numbers(stop_name)
 	for number in numbers:
 		table = PrettyTable()
@@ -38,6 +39,12 @@ def print_tables(stop_name: str):
 			if departure["time_real"] is None:
 				continue
 			table.add_row([departure["line_number"], departure["direction"], f"{departure["time_real"]} min"])
+
+		if line:
+			for row in table.rows:
+				if row[0] != line:
+					table.del_row(table.rows.index(row))
+
 		if len(table.rows) > 0:
 			print(table)
 
